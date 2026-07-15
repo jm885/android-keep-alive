@@ -12,5 +12,15 @@ jobs:
     - uses: actions/first-interaction@v1
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
-        issue-message: "👋 Hi! welcome to Keep Alive project! 📱 Thank you for taking the time to open an issue. Your feedback and contributions are invaluable. Be sure to check out existing [known limitations](https://github.com/hossain-khan/android-keep-alive?tab=readme-ov-file#limitations-)"
+        issue-message: |
+          👋 Hi! Welcome to the Keep Alive project! 📱
+
+          Thank you for taking the time to open an issue. Your feedback and contributions are invaluable.
+
+          To help troubleshoot and resolve the issue faster, please edit your description and provide the following details if you haven't already:
+          - **Android OS Version** (e.g., Android 13, 14, etc.)
+          - **App Version** (e.g., 1.0.0)
+          - **Device Model** (e.g., Samsung Galaxy S23, Google Pixel 8, etc.)
+
+          Be sure to also check out the existing [known limitations](https://github.com/hossain-khan/android-keep-alive?tab=readme-ov-file#limitations-).
         pr-message: "🎉 Thank you for your first pull request for the Keep Alive project! Project contributor will review it soon, and in the meantime, feel free to check out our contribution guidelines. Your efforts make this project better for everyone! 🙌🏽"
