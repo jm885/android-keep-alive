@@ -1,6 +1,7 @@
 package dev.hossain.keepalive.ui.screen
 
 import android.content.Context
+import android.content.pm.PackageManager
 import android.view.HapticFeedbackConstants
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -48,6 +49,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -385,13 +387,12 @@ private fun AppItemContent(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             val context = LocalContext.current
-            val icon = remember { context.packageManager.getApplicationIcon(appInfo.packageName) }
+            val icon =
+                remember(appInfo.packageName) {
+                    context.packageManager.loadAppIconBitmap(appInfo.packageName)
+                }
 
-            Image(
-                bitmap = icon.toBitmap().asImageBitmap(),
-                contentDescription = null,
-                modifier = Modifier.size(48.dp),
-            )
+            AppIcon(icon = icon, modifier = Modifier.size(48.dp))
 
             Spacer(modifier = Modifier.width(16.dp))
 
@@ -455,7 +456,7 @@ fun ShowAppSelectionDialog(
         title = { Text("Select an App") },
         text = {
             LazyColumn {
-                items(installedApps) { app ->
+                items(installedApps, key = { it.packageName }) { app ->
                     SimpleAppListItem(
                         appInfo = app,
                         onAppSelected = {
@@ -502,13 +503,12 @@ private fun SimpleAppListItem(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             val context = LocalContext.current
-            val icon = remember { context.packageManager.getApplicationIcon(appInfo.packageName) }
+            val icon =
+                remember(appInfo.packageName) {
+                    context.packageManager.loadAppIconBitmap(appInfo.packageName)
+                }
 
-            Image(
-                bitmap = icon.toBitmap().asImageBitmap(),
-                contentDescription = null,
-                modifier = Modifier.size(40.dp),
-            )
+            AppIcon(icon = icon, modifier = Modifier.size(40.dp))
 
             Spacer(modifier = Modifier.width(12.dp))
 
@@ -526,4 +526,34 @@ private fun SimpleAppListItem(
             }
         }
     }
+}
+
+@Composable
+private fun AppIcon(
+    icon: ImageBitmap?,
+    modifier: Modifier = Modifier,
+) {
+    if (icon != null) {
+        Image(
+            bitmap = icon,
+            contentDescription = null,
+            modifier = modifier,
+        )
+    } else {
+        Box(
+            modifier = modifier.background(MaterialTheme.colorScheme.surfaceVariant),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = "?",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
+    }
+}
+
+private fun PackageManager.loadAppIconBitmap(packageName: String): ImageBitmap? {
+    return runCatching { getApplicationIcon(packageName).toBitmap().asImageBitmap() }
+        .getOrElse { runCatching { defaultActivityIcon.toBitmap().asImageBitmap() }.getOrNull() }
 }
