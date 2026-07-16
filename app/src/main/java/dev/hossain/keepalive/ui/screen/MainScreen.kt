@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -61,6 +62,8 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
+
+private const val ANDROID_15_API_LEVEL = 35
 
 /**
  * Main landing screen composable for the Keep Alive app.
@@ -153,6 +156,17 @@ fun MainLandingScreen(
 
             Spacer(modifier = Modifier.height(if (lastCheckTime > 0L || serviceStartTime > 0L) 80.dp else 128.dp))
             Column {
+                if (Build.VERSION.SDK_INT >= ANDROID_15_API_LEVEL) {
+                    UnsupportedAndroidVersionBanner(
+                        androidVersion = Build.VERSION.RELEASE,
+                        sdkInt = Build.VERSION.SDK_INT,
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                                .padding(bottom = 8.dp),
+                    )
+                }
                 Row(
                     modifier =
                         Modifier
@@ -263,6 +277,37 @@ fun AppHeading(
         modifier = modifier,
         style = MaterialTheme.typography.headlineLarge,
     )
+}
+
+@Composable
+fun UnsupportedAndroidVersionBanner(
+    androidVersion: String,
+    sdkInt: Int,
+    modifier: Modifier = Modifier,
+) {
+    Card(
+        modifier = modifier,
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.errorContainer,
+            ),
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.unsupported_android_version_title),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onErrorContainer,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = stringResource(R.string.unsupported_android_version_message, androidVersion, sdkInt),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onErrorContainer,
+            )
+        }
+    }
 }
 
 /**
