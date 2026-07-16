@@ -29,4 +29,8 @@
     <string name="battery_warning_message">You are not plugged in to a charger. Keeping this app running will cause significant battery drain over time.</string>
     <string name="battery_warning_dismiss">Dismiss</string>
 
+    <!-- Unsupported Android Version Warning -->
+    <string name="unsupported_android_version_title">Unsupported Android Version</string>
+    <string name="unsupported_android_version_message">This app is supported up to Android 14. Your device is running Android %1$s (API %2$d), so app monitoring may not work reliably.</string>
+
 </resources>
