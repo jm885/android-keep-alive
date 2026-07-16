@@ -97,17 +97,26 @@ class AppViewModel(private val dataStore: DataStore<List<AppInfo>>) : ViewModel(
         val pm = context.packageManager
         val thisAppPackageName = context.packageName
 
-        return pm.getInstalledApplications(PackageManager.GET_META_DATA)
-            .filter { app ->
-                // Check if the app has a launchable activity
-                val hasLaunchableActivity = pm.getLaunchIntentForPackage(app.packageName) != null
+        return runCatching { pm.getInstalledApplications(PackageManager.GET_META_DATA) }
+            .getOrElse { emptyList() }
+            .mapNotNull { app ->
+                val packageName = app.packageName
 
-                // Allow apps with launchable activities, exclude service-only apps
-                hasLaunchableActivity &&
-                    (app.packageName != thisAppPackageName) &&
-                    !alreadyAddedApps.any { it.packageName == app.packageName }
+                if (packageName == thisAppPackageName || alreadyAddedApps.any { it.packageName == packageName }) {
+                    return@mapNotNull null
+                }
+
+                val hasLaunchableActivity =
+                    runCatching { pm.getLaunchIntentForPackage(packageName) != null }
+                        .getOrDefault(false)
+
+                if (!hasLaunchableActivity) {
+                    return@mapNotNull null
+                }
+
+                val appName = runCatching { app.loadLabel(pm).toString() }.getOrDefault(packageName)
+                AppInfo(packageName, appName)
             }
-            .map { app -> AppInfo(app.packageName, app.loadLabel(pm).toString()) }
             .distinctBy { it.packageName }
             .sortedBy { it.appName }
     }
