@@ -29,6 +29,31 @@ class AppRecoveryManagerTest {
     }
 
     @Test
+    fun `force start does not retry an already running app`() = runTest {
+        var launches = 0
+
+        val manager = AppRecoveryManager(
+            launchApp = { launches++ },
+            isAppRunning = { true },
+            verificationDelayMs = 10_000L,
+            maxAttempts = 3,
+        )
+
+        val result =
+            manager.ensureAppRunning(
+                packageName = "com.example.app",
+                forceStart = true,
+            )
+
+        assertEquals(
+            RecoveryResult.Started(attempts = 1),
+            result,
+        )
+
+        assertEquals(1, launches)
+    }
+
+    @Test
     fun `successful launch stops retrying`() = runTest {
         var launches = 0
 

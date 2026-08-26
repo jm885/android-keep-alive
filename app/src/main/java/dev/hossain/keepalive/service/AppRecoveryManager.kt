@@ -20,8 +20,13 @@ class AppRecoveryManager(
         forceStart: Boolean = false,
     ): RecoveryResult {
 
-        if (!forceStart && isAppRunning(packageName)) {
-            return RecoveryResult.AlreadyRunning
+        if (isAppRunning(packageName)) {
+            if (!forceStart) {
+                return RecoveryResult.AlreadyRunning
+            }
+
+            launchApp(packageName)
+            return RecoveryResult.Started(attempts = 1)
         }
 
         repeat(maxAttempts) { attemptIndex ->
