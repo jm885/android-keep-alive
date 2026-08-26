@@ -19,11 +19,17 @@ object AppConfig {
     /** Maximum launch attempts during one recovery cycle. */
     const val MAX_APP_LAUNCH_ATTEMPTS = 10
 
+    /** Delay before verifying a launch and starting the next recovery attempt, in milliseconds. */
+    const val APP_LAUNCH_VERIFICATION_DELAY_MS = 10_000L
+
     /** The minimum value displayed on the app-check interval slider in the settings UI, in minutes. */
     const val MIN_APP_CHECK_INTERVAL_SLIDER = 1
 
-    /** The maximum value displayed on the app-check interval slider in the settings UI, in minutes (24 hours). */
-    const val MAX_APP_CHECK_INTERVAL_SLIDER = 20 // 24 hours in minutes
+    /** The maximum allowable app-check interval, in minutes. */
+    const val MAXIMUM_APP_CHECK_INTERVAL_MIN = 15
+
+    /** The maximum value displayed on the app-check interval slider in the settings UI, in minutes. */
+    const val MAX_APP_CHECK_INTERVAL_SLIDER = MAXIMUM_APP_CHECK_INTERVAL_MIN
 
     /** The step size for the app-check interval slider in the settings UI, in minutes. */
     const val APP_CHECK_INTERVAL_STEP = 1

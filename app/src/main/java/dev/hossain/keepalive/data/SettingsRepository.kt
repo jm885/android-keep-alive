@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dev.hossain.keepalive.ui.theme.ThemeMode
 import dev.hossain.keepalive.util.AppConfig.DEFAULT_APP_CHECK_INTERVAL_MIN
+import dev.hossain.keepalive.util.AppConfig.MAXIMUM_APP_CHECK_INTERVAL_MIN
 import dev.hossain.keepalive.util.AppConfig.MINIMUM_APP_CHECK_INTERVAL_MIN
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -82,7 +83,7 @@ class SettingsRepository(private val context: Context) {
         context.dataStore.data
             .map { preferences ->
                 val interval = preferences[APP_CHECK_INTERVAL] ?: DEFAULT_APP_CHECK_INTERVAL_MIN
-                if (interval < MINIMUM_APP_CHECK_INTERVAL_MIN) MINIMUM_APP_CHECK_INTERVAL_MIN else interval
+                interval.coerceIn(MINIMUM_APP_CHECK_INTERVAL_MIN, MAXIMUM_APP_CHECK_INTERVAL_MIN)
             }
 
     /**
@@ -238,7 +239,8 @@ class SettingsRepository(private val context: Context) {
      */
     suspend fun saveAppCheckInterval(interval: Int) {
         context.dataStore.edit { preferences ->
-            preferences[APP_CHECK_INTERVAL] = interval
+            preferences[APP_CHECK_INTERVAL] =
+                interval.coerceIn(MINIMUM_APP_CHECK_INTERVAL_MIN, MAXIMUM_APP_CHECK_INTERVAL_MIN)
         }
     }
 

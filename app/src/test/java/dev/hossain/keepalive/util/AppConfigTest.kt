@@ -10,32 +10,32 @@ import org.junit.Test
 class AppConfigTest {
     @Test
     fun `MINIMUM_APP_CHECK_INTERVAL_MIN has expected value`() {
-        assertEquals(5, AppConfig.MINIMUM_APP_CHECK_INTERVAL_MIN)
+        assertEquals(1, AppConfig.MINIMUM_APP_CHECK_INTERVAL_MIN)
     }
 
     @Test
     fun `DEFAULT_APP_CHECK_INTERVAL_MIN has expected value`() {
-        assertEquals(30, AppConfig.DEFAULT_APP_CHECK_INTERVAL_MIN)
+        assertEquals(1, AppConfig.DEFAULT_APP_CHECK_INTERVAL_MIN)
     }
 
     @Test
     fun `DELAY_BETWEEN_MULTIPLE_APP_CHECKS_MS has expected value`() {
-        assertEquals(10_000L, AppConfig.DELAY_BETWEEN_MULTIPLE_APP_CHECKS_MS)
+        assertEquals(2_000L, AppConfig.DELAY_BETWEEN_MULTIPLE_APP_CHECKS_MS)
     }
 
     @Test
     fun `MIN_APP_CHECK_INTERVAL_SLIDER has expected value`() {
-        assertEquals(10, AppConfig.MIN_APP_CHECK_INTERVAL_SLIDER)
+        assertEquals(1, AppConfig.MIN_APP_CHECK_INTERVAL_SLIDER)
     }
 
     @Test
-    fun `MAX_APP_CHECK_INTERVAL_SLIDER has expected value of 24 hours`() {
-        assertEquals(1440, AppConfig.MAX_APP_CHECK_INTERVAL_SLIDER)
+    fun `MAX_APP_CHECK_INTERVAL_SLIDER has expected value of 15 minutes`() {
+        assertEquals(15, AppConfig.MAX_APP_CHECK_INTERVAL_SLIDER)
     }
 
     @Test
     fun `APP_CHECK_INTERVAL_STEP has expected value`() {
-        assertEquals(5, AppConfig.APP_CHECK_INTERVAL_STEP)
+        assertEquals(1, AppConfig.APP_CHECK_INTERVAL_STEP)
     }
 
     @Test

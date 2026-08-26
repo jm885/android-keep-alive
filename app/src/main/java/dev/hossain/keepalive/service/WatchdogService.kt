@@ -276,7 +276,26 @@ class WatchdogService : Service() {
                             "[Instance ID: $currentServiceInstanceId] ${appInfo.appName} app is not running. " +
                                 "Attempting to start it now. shouldForceStart=$shouldForceStart",
                         )
-                        AppLauncher.openApp(this@WatchdogService, appInfo.packageName)
+                        val recoveryManager =
+                            AppRecoveryManager(
+                                launchApp = { packageName ->
+                                    AppLauncher.openApp(this@WatchdogService, packageName)
+                                },
+                                isAppRunning = { packageName ->
+                                    val updatedAppStats =
+                                        RecentAppChecker.getRecentlyRunningAppStats(this@WatchdogService)
+                                    RecentAppChecker.isAppRunningRecently(updatedAppStats, packageName)
+                                },
+                            )
+
+                        val recoveryResult =
+                            recoveryManager.ensureAppRunning(
+                                packageName = appInfo.packageName,
+                                forceStart = shouldForceStart,
+                            )
+                        Timber.d(
+                            "Recovery result for ${appInfo.appName}: $recoveryResult",
+                        )
 
                         // Show app restart notification (respecting verbosity)
                         notificationHelper.showAppRestartNotification(

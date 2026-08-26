@@ -2,6 +2,7 @@ package dev.hossain.keepalive.service
 
 import dev.hossain.keepalive.util.AppConfig.APP_LAUNCH_VERIFICATION_DELAY_MS
 import dev.hossain.keepalive.util.AppConfig.MAX_APP_LAUNCH_ATTEMPTS
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import timber.log.Timber
 
@@ -32,7 +33,14 @@ class AppRecoveryManager(
                     "(attempt $attemptNumber/$maxAttempts)"
             )
 
-            launchApp(packageName)
+            try {
+                launchApp(packageName)
+            } catch (exception: Exception) {
+                if (exception is CancellationException) {
+                    throw exception
+                }
+                Timber.e(exception, "Failed to launch $packageName on attempt $attemptNumber")
+            }
 
             Timber.d(
                 "Waiting ${verificationDelayMs}ms " +
