@@ -245,6 +245,7 @@ class WatchdogService : Service() {
                         RecentAppChecker.isAppCurrentlyForeground(
                             this@WatchdogService,
                             appInfo.packageName,
+                            TimeUnit.MINUTES.toMillis(currentCheckInterval.toLong()),
                         )
                     val needsToStart = !isAppRunningRecently || shouldForceStart
 
@@ -288,6 +289,7 @@ class WatchdogService : Service() {
                                     RecentAppChecker.isAppCurrentlyForeground(
                                         this@WatchdogService,
                                         packageName,
+                                        TimeUnit.MINUTES.toMillis(currentCheckInterval.toLong()),
                                     )
                                 },
                             )

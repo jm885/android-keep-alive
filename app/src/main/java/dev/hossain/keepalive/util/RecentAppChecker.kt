@@ -46,7 +46,7 @@ object RecentAppChecker {
     fun isAppCurrentlyForeground(
         context: Context,
         packageName: String,
-        lookbackIntervalMs: Long = 900_000L,
+        lookbackIntervalMs: Long,
     ): Boolean {
         val usageStatsManager =
             context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
@@ -54,8 +54,7 @@ object RecentAppChecker {
         val events = usageStatsManager.queryEvents(endTime - lookbackIntervalMs, endTime)
         val event = UsageEvents.Event()
         val supportsActivityLifecycleEvents = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
-        var latestEventTimestamp = Long.MIN_VALUE
-        var latestForegroundPackage: String? = null
+        val packageStates = mutableMapOf<String, Pair<Long, Boolean>>()
 
         while (events.hasNextEvent()) {
             events.getNextEvent(event)
@@ -73,17 +72,18 @@ object RecentAppChecker {
                     event.eventType == UsageEvents.Event.MOVE_TO_BACKGROUND
                 }
 
-            if ((isForegroundEvent || isBackgroundEvent) && event.timeStamp >= latestEventTimestamp) {
-                latestEventTimestamp = event.timeStamp
-                latestForegroundPackage = if (isForegroundEvent) event.packageName else null
+            if (isForegroundEvent || isBackgroundEvent) {
+                val previousState = packageStates[event.packageName]
+                if (previousState == null || event.timeStamp >= previousState.first) {
+                    packageStates[event.packageName] = event.timeStamp to isForegroundEvent
+                }
             }
         }
 
-        val isForeground = latestForegroundPackage == packageName
+        val isForeground = packageStates[packageName]?.second == true
         Timber.d(
             "isAppCurrentlyForeground: $packageName = $isForeground " +
-                "(latestForegroundPackage=$latestForegroundPackage, " +
-                "latestEventTimestamp=$latestEventTimestamp)",
+                "(latestPackageState=${packageStates[packageName]})",
         )
         return isForeground
     }
