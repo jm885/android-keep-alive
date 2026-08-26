@@ -67,7 +67,7 @@ object RecentAppChecker {
         // NOTE: The 'beginTime' is fixed to endTime - 1,000,000 ms (approx 16.6 minutes)
         // irrespective of 'lookbackIntervalMs'. 'lookbackIntervalMs' is currently only used for logging.
         // This might be a point of confusion or a bug if 'lookbackIntervalMs' is expected to define the query window.
-        val beginTime = endTime - 1_000_000 // Query window of ~16.6 minutes
+        val beginTime = endTime - lookbackIntervalMs // Query window of ~16.6 minutes
         val appList =
             usageStatsManager.queryUsageStats(
                 // Tries to get the most fine-grained data available
@@ -91,8 +91,8 @@ object RecentAppChecker {
                     .toList()
 
             Timber.d(
-                "getRecentlyRunningAppStats: Found ${sortedMap.size} apps with usage in the last ~16.6 mins. " +
-                    "Returning top 5 based on lastTimeUsed. Queried with lookbackIntervalMs param: $lookbackIntervalMs ms. " +
+                "getRecentlyRunningAppStats: Found ${sortedMap.size} apps with usage in the last ${lookbackIntervalMs} ms. " +
+                    "Returning top 5: " +
                     "Result: ${usageStats.map { it.packageName + " (used at " + it.lastTimeUsed + ")" }}",
             )
             return usageStats
