@@ -232,7 +232,6 @@ class WatchdogService : Service() {
                     continue
                 }
 
-                val recentlyUsedAppStats = RecentAppChecker.getRecentlyRunningAppStats(this@WatchdogService)
                 val shouldForceStart = appSettings.enableForceStartAppsFlow.first()
 
                 if (shouldForceStart) {
@@ -242,7 +241,11 @@ class WatchdogService : Service() {
                 }
 
                 monitoredApps.forEach { appInfo ->
-                    val isAppRunningRecently = RecentAppChecker.isAppRunningRecently(recentlyUsedAppStats, appInfo.packageName)
+                    val isAppRunningRecently =
+                        RecentAppChecker.isAppCurrentlyForeground(
+                            this@WatchdogService,
+                            appInfo.packageName,
+                        )
                     val needsToStart = !isAppRunningRecently || shouldForceStart
 
                     // Log app activity regardless of whether the app needs to be started
@@ -282,9 +285,10 @@ class WatchdogService : Service() {
                                     AppLauncher.openApp(this@WatchdogService, packageName)
                                 },
                                 isAppRunning = { packageName ->
-                                    val updatedAppStats =
-                                        RecentAppChecker.getRecentlyRunningAppStats(this@WatchdogService)
-                                    RecentAppChecker.isAppRunningRecently(updatedAppStats, packageName)
+                                    RecentAppChecker.isAppCurrentlyForeground(
+                                        this@WatchdogService,
+                                        packageName,
+                                    )
                                 },
                             )
 

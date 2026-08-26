@@ -1,5 +1,6 @@
 package dev.hossain.keepalive.util
 
+import android.app.usage.UsageEvents
 import android.app.usage.UsageStats
 import android.app.usage.UsageStatsManager
 import android.content.Context
@@ -34,6 +35,38 @@ object RecentAppChecker {
         val didAppRunRecently = recentlyUsedAppStats.any { it.packageName == packageName }
         Timber.d("isAppRunningRecently: $packageName = $didAppRunRecently (checked against ${recentlyUsedAppStats.size} recent stats)")
         return didAppRunRecently
+    }
+
+    /**
+     * Checks whether the latest usage event for an app indicates that it is in the foreground.
+     * Unlike aggregate [UsageStats], usage events preserve the app's latest foreground/background
+     * transition, so a stale usage record is not mistaken for a currently running app.
+     */
+    fun isAppCurrentlyForeground(
+        context: Context,
+        packageName: String,
+        lookbackIntervalMs: Long = 900_000L,
+    ): Boolean {
+        val usageStatsManager =
+            context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+        val endTime = System.currentTimeMillis()
+        val events = usageStatsManager.queryEvents(endTime - lookbackIntervalMs, endTime)
+        val event = UsageEvents.Event()
+        var latestEventType: Int? = null
+
+        while (events.hasNextEvent()) {
+            events.getNextEvent(event)
+            if (event.packageName == packageName &&
+                (event.eventType == UsageEvents.Event.MOVE_TO_FOREGROUND ||
+                    event.eventType == UsageEvents.Event.MOVE_TO_BACKGROUND)
+            ) {
+                latestEventType = event.eventType
+            }
+        }
+
+        val isForeground = latestEventType == UsageEvents.Event.MOVE_TO_FOREGROUND
+        Timber.d("isAppCurrentlyForeground: $packageName = $isForeground")
+        return isForeground
     }
 
     /**
