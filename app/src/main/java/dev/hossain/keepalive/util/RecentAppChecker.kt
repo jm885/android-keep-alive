@@ -4,6 +4,7 @@ import android.app.usage.UsageEvents
 import android.app.usage.UsageStats
 import android.app.usage.UsageStatsManager
 import android.content.Context
+import android.os.Build
 import timber.log.Timber
 import java.util.SortedMap
 import java.util.TreeMap
@@ -52,20 +53,38 @@ object RecentAppChecker {
         val endTime = System.currentTimeMillis()
         val events = usageStatsManager.queryEvents(endTime - lookbackIntervalMs, endTime)
         val event = UsageEvents.Event()
-        var latestEventType: Int? = null
+        val supportsActivityLifecycleEvents = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+        var latestEventTimestamp = Long.MIN_VALUE
+        var latestForegroundPackage: String? = null
 
         while (events.hasNextEvent()) {
             events.getNextEvent(event)
-            if (event.packageName == packageName &&
-                (event.eventType == UsageEvents.Event.MOVE_TO_FOREGROUND ||
-                    event.eventType == UsageEvents.Event.MOVE_TO_BACKGROUND)
-            ) {
-                latestEventType = event.eventType
+            val isForegroundEvent =
+                if (supportsActivityLifecycleEvents) {
+                    event.eventType == UsageEvents.Event.ACTIVITY_RESUMED
+                } else {
+                    event.eventType == UsageEvents.Event.MOVE_TO_FOREGROUND
+                }
+            val isBackgroundEvent =
+                if (supportsActivityLifecycleEvents) {
+                    event.eventType == UsageEvents.Event.ACTIVITY_PAUSED ||
+                        event.eventType == UsageEvents.Event.ACTIVITY_STOPPED
+                } else {
+                    event.eventType == UsageEvents.Event.MOVE_TO_BACKGROUND
+                }
+
+            if ((isForegroundEvent || isBackgroundEvent) && event.timeStamp >= latestEventTimestamp) {
+                latestEventTimestamp = event.timeStamp
+                latestForegroundPackage = if (isForegroundEvent) event.packageName else null
             }
         }
 
-        val isForeground = latestEventType == UsageEvents.Event.MOVE_TO_FOREGROUND
-        Timber.d("isAppCurrentlyForeground: $packageName = $isForeground")
+        val isForeground = latestForegroundPackage == packageName
+        Timber.d(
+            "isAppCurrentlyForeground: $packageName = $isForeground " +
+                "(latestForegroundPackage=$latestForegroundPackage, " +
+                "latestEventTimestamp=$latestEventTimestamp)",
+        )
         return isForeground
     }
 
