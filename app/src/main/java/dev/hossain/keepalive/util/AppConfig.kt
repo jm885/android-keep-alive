@@ -8,20 +8,23 @@ package dev.hossain.keepalive.util
  */
 object AppConfig {
     /** The minimum allowable app-check interval, in minutes. Enforced by [dev.hossain.keepalive.data.SettingsRepository.appCheckIntervalFlow]. */
-    const val MINIMUM_APP_CHECK_INTERVAL_MIN = 5
+    const val MINIMUM_APP_CHECK_INTERVAL_MIN = 1
 
     /** The default app-check interval used when no value has been configured, in minutes. */
-    const val DEFAULT_APP_CHECK_INTERVAL_MIN = 30
+    const val DEFAULT_APP_CHECK_INTERVAL_MIN = 1
 
     /** Delay introduced between consecutive app checks when monitoring multiple apps, in milliseconds. */
-    const val DELAY_BETWEEN_MULTIPLE_APP_CHECKS_MS = 10_000L
+    const val DELAY_BETWEEN_MULTIPLE_APP_CHECKS_MS = 2_000L
+
+    /** Maximum launch attempts during one recovery cycle. */
+    const val MAX_APP_LAUNCH_ATTEMPTS = 10
 
     /** The minimum value displayed on the app-check interval slider in the settings UI, in minutes. */
-    const val MIN_APP_CHECK_INTERVAL_SLIDER = 10
+    const val MIN_APP_CHECK_INTERVAL_SLIDER = 1
 
     /** The maximum value displayed on the app-check interval slider in the settings UI, in minutes (24 hours). */
-    const val MAX_APP_CHECK_INTERVAL_SLIDER = 1440 // 24 hours in minutes
+    const val MAX_APP_CHECK_INTERVAL_SLIDER = 20 // 24 hours in minutes
 
     /** The step size for the app-check interval slider in the settings UI, in minutes. */
-    const val APP_CHECK_INTERVAL_STEP = 5
+    const val APP_CHECK_INTERVAL_STEP = 1
 }
