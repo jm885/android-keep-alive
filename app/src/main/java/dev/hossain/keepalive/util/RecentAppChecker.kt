@@ -46,7 +46,7 @@ object RecentAppChecker {
     fun isAppCurrentlyForeground(
         context: Context,
         packageName: String,
-        lookbackIntervalMs: Long,
+        lookbackIntervalMs: Long = 900_000L,
     ): Boolean {
         val usageStatsManager =
             context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
@@ -54,7 +54,8 @@ object RecentAppChecker {
         val events = usageStatsManager.queryEvents(endTime - lookbackIntervalMs, endTime)
         val event = UsageEvents.Event()
         val supportsActivityLifecycleEvents = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
-        val packageStates = mutableMapOf<String, Pair<Long, Boolean>>()
+        var latestEventTimestamp = Long.MIN_VALUE
+        var latestForegroundPackage: String? = null
 
         while (events.hasNextEvent()) {
             events.getNextEvent(event)
@@ -72,18 +73,17 @@ object RecentAppChecker {
                     event.eventType == UsageEvents.Event.MOVE_TO_BACKGROUND
                 }
 
-            if (isForegroundEvent || isBackgroundEvent) {
-                val previousState = packageStates[event.packageName]
-                if (previousState == null || event.timeStamp >= previousState.first) {
-                    packageStates[event.packageName] = event.timeStamp to isForegroundEvent
-                }
+            if ((isForegroundEvent || isBackgroundEvent) && event.timeStamp >= latestEventTimestamp) {
+                latestEventTimestamp = event.timeStamp
+                latestForegroundPackage = if (isForegroundEvent) event.packageName else null
             }
         }
 
-        val isForeground = packageStates[packageName]?.second == true
+        val isForeground = latestForegroundPackage == packageName
         Timber.d(
             "isAppCurrentlyForeground: $packageName = $isForeground " +
-                "(latestPackageState=${packageStates[packageName]})",
+                "(latestForegroundPackage=$latestForegroundPackage, " +
+                "latestEventTimestamp=$latestEventTimestamp)",
         )
         return isForeground
     }
